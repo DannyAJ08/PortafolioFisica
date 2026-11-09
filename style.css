@@ -76,3 +76,15 @@ footer { text-align: center; color: var(--muted); font-size: .85rem; padding: 2r
   .controls label { grid-template-columns: 1fr; }
   header h1 { font-size: 1.4rem; }
 }
+
+.cita { font-size: .75em; line-height: 0; margin-left: 1px; }
+.cita a { color: var(--accent); text-decoration: none; }
+.cita a:hover { text-decoration: underline; }
+.avance { margin: 0 0 .3rem; font-size: .8rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--accent2); }
+.refs li { margin: .35rem 0; word-break: break-word; }
+.refs li:target { background: #fff4ce; }
+.controls label.check { display: flex; gap: .5rem; grid-template-columns: none; }
+@media (max-width: 700px) {
+  nav { flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  nav a { white-space: nowrap; }
+}

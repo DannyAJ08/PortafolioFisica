@@ -55,6 +55,14 @@ function plot(canvas, series, opts) {
   ctx.save(); ctx.translate(16, (m.t + H - m.b) / 2); ctx.rotate(-Math.PI / 2);
   ctx.fillText(opts.ylabel, 0, 0); ctx.restore();
 
+  // marcas verticales opcionales (por ejemplo, encuentros planetarios)
+  (opts.marks || []).forEach(mk => {
+    ctx.strokeStyle = "#adb5bd"; ctx.setLineDash([3, 3]); ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(X(mk.x), m.t); ctx.lineTo(X(mk.x), H - m.b); ctx.stroke();
+    ctx.setLineDash([]); ctx.fillStyle = "#5b6168"; ctx.textAlign = "left";
+    ctx.fillText(mk.label, X(mk.x) + 4, m.t + 14 + (mk.dy || 0));
+  });
+
   // series
   ctx.save();
   ctx.beginPath(); ctx.rect(m.l, m.t, W - m.l - m.r, H - m.t - m.b); ctx.clip();
@@ -260,7 +268,151 @@ function tema5() {
   dibujar();
 }
 
-tema1(); tema2(); tema3(); tema4(); tema5();
+
+// ---------- Tema 6: balance de energía del frenado regenerativo (ciclo EPA UDDS) ----------
+function tema6() {
+  const v = UDDS_MPH.map(x => x * 0.44704); // mph -> m/s
+  const t = v.map((_, i) => i);
+  const m = 1600, crr = 0.010, g = 9.81, rho = 1.2, CdA = 0.70;
+  const sEta = document.getElementById("t6-eta"), oEta = document.getElementById("t6-eta-o");
+  plot(document.getElementById("t6-vel"), [
+    { x: t, y: v.map(x => x * 3.6), color: C1, label: "velocidad del ciclo UDDS" }
+  ], { xlabel: "tiempo [s]", ylabel: "velocidad [km/h]", ymin: 0 });
+
+  function dibujar() {
+    const eta = +sEta.value;
+    oEta.textContent = Math.round(eta * 100) + " %";
+    let trac = 0, frena = 0, rec = 0, dist = 0;
+    const T = [0], F = [0], R = [0], K = [0];
+    for (let i = 0; i < v.length - 1; i++) {
+      const vm = (v[i] + v[i + 1]) / 2, a = v[i + 1] - v[i];      // dt = 1 s
+      const fuerza = m * a + (vm > 0.1 ? crr * m * g : 0) + 0.5 * rho * CdA * vm * vm;
+      const P = fuerza * vm;                                         // W, durante 1 s = J
+      if (P > 0) trac += P; else { frena += -P; rec += eta * -P; }
+      dist += vm;
+      T.push(trac / 3600); F.push(frena / 3600); R.push(rec / 3600); K.push(0.5 * m * v[i + 1] ** 2 / 3600);
+    }
+    plot(document.getElementById("t6-ene"), [
+      { x: t, y: T, color: C4, label: "entregada a las ruedas" },
+      { x: t, y: F, color: C2, label: "a quitar al frenar" },
+      { x: t, y: R, color: C3, width: 3, label: "recuperada" },
+      { x: t, y: K, color: C1, dash: [4, 3], label: "cinética ½mv²" }
+    ], { xlabel: "tiempo [s]", ylabel: "energía acumulada [Wh]", ymin: 0 });
+    document.getElementById("t6-out").innerHTML =
+      `Distancia: <b>${f(dist / 1000, 1)} km</b> · energía a las ruedas: <b>${f(trac / 3.6e6, 2)} kWh</b> · ` +
+      `energía de frenado: <b>${f(frena / 3.6e6, 2)} kWh</b> (${Math.round(100 * frena / trac)} % de la de tracción) · ` +
+      `recuperada: <b>${f(rec / 3.6e6, 2)} kWh</b> (${Math.round(100 * rec / trac)} %) · ` +
+      `disipada en el frenado: <b>${f((frena - rec) / 3.6e6, 2)} kWh</b>`;
+  }
+  sEta.addEventListener("input", dibujar);
+  dibujar();
+}
+
+// ---------- Tema 7: pelota que rebota con coeficiente de restitución ----------
+function tema7() {
+  const cv = document.getElementById("t7-canvas");
+  const sE = document.getElementById("t7-e"), sU = document.getElementById("t7-u"), cA = document.getElementById("t7-avg");
+  const oE = document.getElementById("t7-e-o"), oU = document.getElementById("t7-u-o");
+  const out = document.getElementById("t7-out");
+  const g = 9.81, h0 = 2, tMax = 8;
+  let anim = null;
+
+  function simular(e, umbral) {
+    // evento a evento: caída libre entre choques, v' = -e v en cada choque
+    const ts = [], hs = [];
+    let t = 0, y = h0, vy = 0, rebotes = 0, quieta = false;
+    const dt = 0.002;
+    while (t < tMax) {
+      ts.push(t); hs.push(y);
+      if (quieta) { t += dt; continue; }
+      vy -= g * dt; y += vy * dt; t += dt;
+      if (y <= 0) {
+        y = 0;
+        if (-vy < Math.max(umbral, 0.05) || e === 0) { vy = 0; quieta = true; }   // por debajo del umbral no rebota
+        else { vy = -e * vy; rebotes++; }
+      }
+      if (y > 50) break;
+    }
+    return { ts, hs, rebotes, quieta };
+  }
+
+  function dibujar() {
+    let e = +sE.value; const umbral = +sU.value;
+    if (cA.checked) e = (e + 0) / 2;                 // Unity, modo Average con piso de rebote 0
+    oE.textContent = f(+sE.value, 2);
+    oU.textContent = f(umbral, 1) + " m/s";
+    const s = simular(e, umbral);
+    const ax = plot(cv, [
+      { x: s.ts, y: s.hs, color: C1, width: 2.5, label: `altura de la pelota (e efectivo = ${f(e, 2)})` }
+    ], { xlabel: "tiempo [s]", ylabel: "altura [m]", xmin: 0, xmax: tMax, ymin: 0, ymax: Math.max(2.4, ...s.hs) * 1.05 });
+    const v0 = Math.sqrt(2 * g * h0);
+    const h1 = e * e * h0, perdida = 1 - e * e;
+    out.innerHTML =
+      `e efectivo = <b>${f(e, 2)}</b> · primer rebote: h₁ = e²h₀ = <b>${f(h1, 2)} m</b> · ` +
+      (perdida >= 0 ? `energía perdida en cada choque: 1 − e² = <b>${Math.round(perdida * 100)} %</b> · ` : `energía ganada en cada choque: e² − 1 = <b>${Math.round(-perdida * 100)} %</b> · `) +
+      `velocidad al tocar el suelo la primera vez: ${f(v0, 2)} m/s · rebotes en ${tMax} s: <b>${s.rebotes}</b>` +
+      (e > 1 ? " · <b>la pelota gana energía en cada choque: el motor tiene un error</b>" :
+       e === 1 ? " · <b>no pierde energía: rebota para siempre</b>" :
+       s.quieta ? " · se detuvo" : "");
+
+    // pelota animada a la derecha del gráfico
+    cancelAnimationFrame(anim);
+    const ctx = cv.getContext("2d"), base = ctx.getImageData(0, 0, cv.width, cv.height);
+    const t0 = performance.now();
+    const paso = now => {
+      const t = ((now - t0) / 1000) % tMax;
+      const i = Math.min(s.ts.length - 1, Math.round(t / 0.002));
+      ctx.putImageData(base, 0, 0);
+      ctx.fillStyle = C2; ctx.beginPath();
+      ctx.arc(ax.X(s.ts[i]), ax.Y(s.hs[i]) - 9, 9, 0, 2 * Math.PI); ctx.fill();
+      anim = requestAnimationFrame(paso);
+    };
+    anim = requestAnimationFrame(paso);
+  }
+  [sE, sU].forEach(el => el.addEventListener("input", dibujar));
+  cA.addEventListener("change", dibujar);
+  document.querySelectorAll("[data-t7]").forEach(b => b.addEventListener("click", () => {
+    const [e, u, avg] = b.dataset.t7.split(",");
+    sE.value = e; sU.value = u; cA.checked = avg === "1"; dibujar();
+  }));
+  dibujar();
+}
+
+// ---------- Tema 8: tabla de la rueda de reacción ----------
+function tema8() {
+  const Is = 40, Ir = 0.005, wmax = 6000 * 2 * Math.PI / 60;
+  const filas = [0.5, 1, 2, 3, 4, 4.5].map(gs => {
+    const ws = gs * Math.PI / 180, wr = Is / Ir * ws, rpm = wr * 60 / (2 * Math.PI);
+    const pct = 100 * wr / wmax;
+    return `<tr><td>${f(gs, 1)}</td><td>${Math.round(rpm)}</td><td>${Math.round(pct)} %${pct > 99 ? " (saturada)" : ""}</td></tr>`;
+  });
+  document.getElementById("t8-tabla").innerHTML = filas.join("");
+}
+
+// ---------- Tema 9: rapidez de la Voyager 2 respecto al Sol (JPL Horizons) ----------
+function tema9() {
+  const GM = 1.32712e11, UA = 1.495979e8;                          // km³/s², km
+  const anio = d => { const [y, mo, da] = d.split("-").map(Number); return y + (mo - 1) / 12 + (da - 1) / 365; };
+  const x = VOYAGER2.map(r => anio(r[0]));
+  const vel = VOYAGER2.map(r => Math.hypot(r[1], r[2], r[3]));
+  const esc = VOYAGER2.map(r => Math.sqrt(2 * GM / (r[4] * UA)));
+  const marks = [
+    { x: anio("1979-07-09"), label: "Júpiter" }, { x: anio("1981-08-26"), label: "Saturno" },
+    { x: anio("1986-01-24"), label: "Urano" }, { x: anio("1989-08-25"), label: "Neptuno" }
+  ];
+  plot(document.getElementById("t9-plot"), [
+    { x, y: esc, color: C4, dash: [6, 4], label: "velocidad de escape del Sol √(2GM/r)" },
+    { x, y: vel, color: C2, width: 3, label: "rapidez de la Voyager 2 respecto al Sol" }
+  ], { xlabel: "año", ylabel: "rapidez [km/s]", xmax: 1991, ymin: 0, ymax: 42, marks });
+  // saltos en cada encuentro (dato anterior y posterior)
+  const saltos = marks.map(mk => {
+    const i = x.findIndex(v => v > mk.x);
+    return `${mk.label}: ${f(vel[i - 1], 1)} → ${f(vel[i], 1)} km/s`;
+  });
+  document.getElementById("t9-out").innerHTML = "Saltos de rapidez en cada encuentro: <b>" + saltos.join(" · ") + "</b>";
+}
+
+tema1(); tema2(); tema3(); tema4(); tema5(); tema6(); tema7(); tema8(); tema9();
 
 // ---------- Menú: bajada suave y tema resaltado ----------
 const enlaces = document.querySelectorAll("nav a");

@@ -13,31 +13,35 @@
 </header>
 
 <nav aria-label="Índice">
-  <a href="#tema1">1. Dron de reparto</a>
-  <a href="#tema2">2. El salto del personaje</a>
-  <a href="#tema3">3. Gravedad artificial</a>
-  <a href="#tema4">4. Llantas de Fórmula 1</a>
-  <a href="#tema5">5. Control háptico</a>
+  <a href="#tema1">1. Dron</a>
+  <a href="#tema2">2. Salto</a>
+  <a href="#tema3">3. Gravedad</a>
+  <a href="#tema4">4. Llantas F1</a>
+  <a href="#tema5">5. Háptica</a>
+  <a href="#tema6">6. Frenado</a>
+  <a href="#tema7">7. Rebote</a>
+  <a href="#tema8">8. Satélite</a>
+  <a href="#tema9">9. Voyager</a>
   <a href="#fuentes">Fuentes</a>
 </nav>
 
 <main>
-  <p>Este portafolio reúne casos concretos donde la mecánica que vemos en clase se escribe directamente en código. Se irá ampliando en el Avance 2 y en la Entrega Final, hasta cubrir los trece temas del curso.</p>
+  <p>Este portafolio reúne casos concretos donde la mecánica que vemos en clase se escribe directamente en código. Contiene los temas 1 a 5 (Avance 1, Cinemática y Dinámica, corregidos según la retroalimentación) y los temas 6 a 9 (Avance 2, Leyes de conservación y Gravitación). Cada afirmación específica lleva un número entre corchetes que enlaza a su fuente en la sección <a href="#fuentes">Fuentes</a>.</p>
 
-
+  <!-- ================= TEMA 1 ================= -->
   <section id="tema1">
     <h2>Tema 1 — Rastreo y navegación de un dron de reparto</h2>
     <p><b>Concepto:</b> cinemática en dos dimensiones, vectores de posición, velocidad y aceleración, y descomposición en componentes.</p>
 
     <h3>Caso de uso en Ingeniería del Software</h3>
-    <p><b>El caso.</b> Los drones de reparto (Zipline, Wing) y muchos drones comerciales vuelan con el piloto automático de código abierto PX4. Su estimador de estado, EKF2, combina los datos del GPS, que llegan pocas veces por segundo, con los del acelerómetro y el giroscopio, que llegan cientos de veces por segundo, para saber dónde está el dron en todo momento.</p>
+    <p><b>El caso.</b> PX4 es un piloto automático de código abierto para drones<sup class="cita"><a href="#f1">[1]</a><a href="#f2">[2]</a></sup>. En su propio catálogo de proyectos de logística y carga, PX4 muestra drones comerciales construidos sobre su software, como el multicóptero AeroSense Aerobo (AS-MC02-P), descrito como "fully autonomous multicopter based on PX4", y el VTOL DeltaQuad<sup class="cita"><a href="#f2">[2]</a></sup>. Para saber dónde está el dron, PX4 usa un filtro de navegación llamado EKF2<sup class="cita"><a href="#f1">[1]</a></sup>, que combina los datos del GPS, que llegan pocas veces por segundo, con los de la unidad inercial (acelerómetro y giroscopio), que llegan mucho más seguido.</p>
     <p><b>La física.</b> Entre una lectura de GPS y la siguiente, el software predice la posición con las ecuaciones de cinemática aplicadas a cada componente:</p>
     <div class="eq">
       <b>r</b>(t) = x(t) <b>î</b> + y(t) <b>ĵ</b> &nbsp;&nbsp;·&nbsp;&nbsp; <b>v</b> = d<b>r</b>/dt &nbsp;&nbsp;·&nbsp;&nbsp; <b>a</b> = d<b>v</b>/dt &nbsp;&nbsp; (vectores en negrita)<br>
       x(t+Δt) = x(t) + vₓ Δt + ½ aₓ Δt² &nbsp;&nbsp;&nbsp; y(t+Δt) = y(t) + v_y Δt + ½ a_y Δt²<br>
       vₓ(t+Δt) = vₓ(t) + aₓ Δt &nbsp;&nbsp;&nbsp; v_y(t+Δt) = v_y(t) + a_y Δt
     </div>
-    <p>Cuando llega un dato nuevo del GPS, el filtro de Kalman compara la posición medida con la predicha y corrige.</p>
+    <p>Cuando llega un dato nuevo del GPS, el filtro de Kalman compara la posición medida con la predicha y corrige<sup class="cita"><a href="#f1">[1]</a></sup>.</p>
     <p><b>Por qué modelar la física es mejor.</b> Si el software solo usara la última posición del GPS (un valor fijo hasta la siguiente lectura), el dron "saltaría" de un punto a otro y el control reaccionaría tarde. Una trayectoria precalculada tampoco sirve, porque el viento empuja el dron fuera de ella. Con el modelo cinemático el dron sabe dónde está entre lecturas y puede seguir volando unos segundos si pierde el GPS. El costo es que el error de la predicción crece con el tiempo (por el término ½aΔt²), por eso el modelo necesita las correcciones del GPS.</p>
 
     <h3>Recurso de apoyo: visualización de datos</h3>
@@ -64,7 +68,7 @@
     <p><b>Concepto:</b> caída libre y tiro parabólico; por qué casi ningún juego usa 9,81 m/s² y cómo se ajustan la altura de salto y el tiempo en el aire.</p>
 
     <h3>Caso de uso en Ingeniería del Software</h3>
-    <p><b>El caso.</b> En los juegos de plataformas (Super Mario Bros., Celeste, Hollow Knight) el salto se programa con caída libre, pero con una gravedad mucho mayor que la real y, a menudo, más fuerte al bajar que al subir. Kyle Pittman lo explicó en la charla de GDC 2016 <i>"Math for Game Programmers: Building a Better Jump"</i>: el diseñador no elige g, elige la altura del salto <i>h</i> y el tiempo hasta el punto más alto <i>tₕ</i>, y de ahí se calculan g y la velocidad inicial.</p>
+    <p><b>El caso.</b> En los juegos de plataformas el salto se programa con caída libre, pero la gravedad no se toma de la realidad: se elige para que el salto se sienta bien. Kyle Pittman (Minor Key Games) lo explicó en la charla de GDC 2016 <i>"Math for Game Programmers: Building a Better Jump"</i><sup class="cita"><a href="#f3">[3]</a></sup>: el diseñador no elige g, elige la altura del salto <i>h</i> y el tiempo hasta el punto más alto <i>tₕ</i>, y de ahí calcula g y la velocidad inicial. En la misma charla muestra cómo usar una gravedad mayor al caer que al subir para que el salto se sienta más firme<sup class="cita"><a href="#f3">[3]</a></sup>.</p>
     <p><b>La física.</b></p>
     <div class="eq">
       y(t) = v₀ t − ½ g t² &nbsp;&nbsp;&nbsp; x(t) = vₓ t<br>
@@ -78,7 +82,7 @@
     <h3>Recurso de apoyo: simulación interactiva</h3>
     <div class="controls">
       <label>Impulso de salto v₀ <input type="range" id="t2-v0" min="3" max="20" step="0.1" value="11.4"><output id="t2-v0-o"></output></label>
-      <label>Gravedad g <input type="range" id="t2-g" min="2" max="60" step="0.01" value="32.7"><output id="t2-g-o"></output></label>
+      <label>Gravedad g <input type="range" id="t2-g" min="1" max="60" step="0.01" value="32.7"><output id="t2-g-o"></output></label>
       <label>Multiplicador de gravedad al caer m <input type="range" id="t2-m" min="1" max="3" step="0.1" value="1.5"><output id="t2-m-o"></output></label>
     </div>
     <p>
@@ -97,7 +101,7 @@
     <p><b>Concepto:</b> movimiento circular uniforme, aceleración centrípeta, período y frecuencia angular.</p>
 
     <h3>Caso de uso en Ingeniería del Software</h3>
-    <p><b>El caso.</b> El estudio de la NASA <i>Space Settlements: A Design Study</i> (NASA SP-413, 1977) diseñó el "Toro de Stanford", un anillo de casi 900 m de radio que gira a 1 rpm para dar cerca de 1 g en el piso. Hoy ese tipo de diseño se evalúa con software de simulación, y los videojuegos y simuladores de estaciones giratorias calculan la gravedad aparente de cada punto con la misma ecuación.</p>
+    <p><b>El caso.</b> El estudio de la NASA <i>Space Settlements: A Design Study</i> (NASA SP-413, 1977) diseñó el "Toro de Stanford": un tubo doblado en forma de rueda de 1790 m de diámetro (radio 895 m) que gira a una revolución por minuto alrededor de su centro para simular la gravedad terrestre<sup class="cita"><a href="#f4">[4]</a></sup>. Cualquier software que simule una estación así, sea una herramienta de diseño o un videojuego, tiene que calcular la gravedad aparente de cada punto con la ecuación de abajo.</p>
     <p><b>La física.</b> Una persona parada en el piso del anillo gira con él. El piso la empuja hacia el centro (fuerza normal), y esa fuerza es la que produce su aceleración centrípeta. Ella la siente como "peso":</p>
     <div class="eq">
       ω = 2π / T = 2π · rpm / 60 &nbsp;&nbsp;&nbsp; v = ω r<br>
@@ -161,14 +165,14 @@
 
     <h3>Caso numérico trabajado: ¿qué radio y qué rpm dan 1 g?</h3>
     <p>Queremos g_ap = 9,81 m/s². Elegimos la velocidad de giro y despejamos el radio con r = g/ω².</p>
-    <p><b>Con 2 rpm</b> (valor que suele tomarse como tolerable para la mayoría de personas):</p>
+    <p><b>Con 2 rpm</b> (el doble de la velocidad de giro que eligió la NASA para el Toro de Stanford<sup class="cita"><a href="#f4">[4]</a></sup>):</p>
     <div class="eq">
       ω = 2π · 2 / 60 = 0,2094 rad/s<br>
       ω² = 0,04386 rad²/s²<br>
       r = 9,81 / 0,04386 = <b>223,6 m</b> &nbsp;&nbsp; (período T = 30 s, rapidez del piso v = ωr = 46,8 m/s)
     </div>
     <p><b>Al revés:</b> si el anillo mide r = 100 m, ω = √(g/r) = √(9,81/100) = 0,313 rad/s, que equivale a 0,313 · 60 / 2π = <b>2,99 rpm</b>.</p>
-    <p>Comprobación con el Toro de Stanford: a 1 rpm, r = 9,81/(0,1047)² ≈ 894 m, que coincide con el tamaño de casi 900 m de radio del diseño de la NASA.</p>
+    <p>Comprobación con el Toro de Stanford: a 1 rpm, r = 9,81/(0,1047)² ≈ 894 m, que coincide con los 895 m de radio (1790 m de diámetro) del diseño de la NASA<sup class="cita"><a href="#f4">[4]</a></sup>.</p>
     <table>
       <thead><tr><th>rpm</th><th>ω [rad/s]</th><th>Período T [s]</th><th>Radio para 1 g [m]</th></tr></thead>
       <tbody id="t3-tabla"></tbody>
@@ -182,22 +186,22 @@
     <p><b>Concepto:</b> fuerza de fricción, coeficiente estático y cinético, fuerza normal y por qué el agarre real no es proporcional a la carga como predice el modelo simple.</p>
 
     <h3>Caso de uso en Ingeniería del Software</h3>
-    <p><b>El caso.</b> Los equipos de Fórmula 1 prueban sus autos en simuladores antes de llegar a cada pista, y el modelo de llanta es una de las partes más importantes del software. Herramientas comerciales como MF-Tyre/MF-Swift (Siemens) o Adams Tire (Hexagon) implementan la <i>Magic Formula</i> de Pacejka, que incluye que el coeficiente de agarre baja cuando sube la carga y depende de la temperatura del caucho.</p>
+    <p><b>El caso.</b> Para simular cómo se comporta un auto en curva, el software necesita un modelo de llanta. Siemens vende Simcenter Tire, cuyo modelo MF-Tyre es, según la propia página del producto, "the worldwide standard implementation of the Pacejka Magic Formula", pensado para análisis de manejo y control de vehículos<sup class="cita"><a href="#f5">[5]</a></sup>. La <i>Magic Formula</i> de Pacejka describe la fuerza de la llanta en función del deslizamiento y de la carga vertical, e incluye que el coeficiente de agarre baja cuando la carga sube<sup class="cita"><a href="#f6">[6]</a></sup>. Esa caída del agarre con la carga es la base de cómo se ajusta un auto de carreras<sup class="cita"><a href="#f7">[7]</a></sup>.</p>
     <p><b>La física.</b> El modelo de clase dice que la fricción máxima es proporcional a la normal. En una llanta real, μ disminuye al aumentar la carga (sensibilidad a la carga):</p>
     <div class="eq">
       Modelo simple: f_s,máx = μ_s N &nbsp;&nbsp;&nbsp; f_k = μ_k N &nbsp;&nbsp; (μ_k &lt; μ_s)<br>
       Llanta real (aproximación lineal): μ(F_z) = μ₀ [1 − k (F_z − F_z0) / F_z0]<br>
       F_y,máx = μ(F_z) · F_z &nbsp;&nbsp; → crece menos que proporcional a la carga
     </div>
-    <p>La temperatura actúa sobre μ₀: el caucho agarra porque se deforma sobre las irregularidades del asfalto, y eso solo funciona bien dentro de un rango de temperatura que Pirelli define para cada compuesto. Frío, el caucho está rígido y desliza; muy caliente, se ablanda de más y se degrada. Por eso los pilotos calientan las llantas en la vuelta de formación.</p>
-    <p><b>Por qué modelar la física es mejor.</b> Con un valor fijo de agarre, el simulador diría que más carga (más alerón) siempre da más agarre en la misma proporción, y que repartir la carga entre las llantas no importa. Ambas cosas son falsas, y los ingenieros usan el simulador justamente para decidir esos ajustes. El costo es que el modelo necesita muchos parámetros medidos en bancos de prueba, datos que Pirelli entrega a los equipos.</p>
+    <p>La temperatura actúa sobre μ₀: el caucho agarra porque se deforma sobre las irregularidades del asfalto, y su rigidez cambia mucho con la temperatura<sup class="cita"><a href="#f6">[6]</a></sup>. Frío, el caucho está rígido y desliza; muy caliente, se ablanda de más. Por eso cada compuesto tiene una ventana de temperatura donde agarra mejor.</p>
+    <p><b>Por qué modelar la física es mejor.</b> Con un valor fijo de agarre, el simulador diría que más carga (más alerón) siempre da más agarre en la misma proporción, y que repartir la carga entre las llantas no importa. Ambas cosas son falsas<sup class="cita"><a href="#f7">[7]</a></sup>, y los ingenieros usan el simulador justamente para decidir esos ajustes. El costo es que el modelo necesita muchos parámetros que se miden en bancos de prueba de llantas<sup class="cita"><a href="#f6">[6]</a></sup>; sin esas mediciones, la Magic Formula no sirve de mucho.</p>
 
     <h3>Recurso de apoyo: visualización de datos</h3>
     <p>Fuerza lateral máxima de una llanta en función de la carga vertical, comparando el modelo simple con el modelo con sensibilidad a la carga (μ₀ = 1,8 a F_z0 = 4000 N, k = 0,25).</p>
     <canvas id="t4-plot" class="plot" width="800" height="400"></canvas>
     <p class="readout" id="t4-ej"></p>
     <p>Esto explica por qué en una curva la transferencia de carga hacia las llantas exteriores le quita agarre total al eje, y por qué los ingenieros buscan repartir la carga lo más parejo posible.</p>
-    <p class="fuente">Datos calculados por el autor con el modelo lineal de sensibilidad a la carga descrito en Pacejka (2012) y Milliken y Milliken (1995). Los valores de μ₀ y k son representativos de una llanta de competición, no datos oficiales de Pirelli.</p>
+    <p class="fuente">Datos calculados por el autor con el modelo lineal de sensibilidad a la carga<sup class="cita"><a href="#f6">[6]</a><a href="#f7">[7]</a></sup>. Los valores de μ₀ y k son representativos de una llanta de competición, no son datos oficiales de un fabricante.</p>
   </section>
 
   <!-- ================= TEMA 5 ================= -->
@@ -206,50 +210,256 @@
     <p><b>Concepto:</b> ley de Hooke, fuerza elástica y tercera ley de Newton; cómo un motor de vibración o un gatillo adaptativo simula que uno está tensando algo que no existe.</p>
 
     <h3>Caso de uso en Ingeniería del Software</h3>
-    <p><b>El caso.</b> El control DualSense de PlayStation 5 tiene gatillos adaptativos: un motor pequeño con engranajes empuja el gatillo en contra del dedo. El juego le dice al control, en cada momento, cuánta fuerza aplicar según cuánto se ha hundido el gatillo. En <i>Kena: Bridge of Spirits</i>, por ejemplo, se usa para sentir que se tensa la cuerda de un arco.</p>
+    <p><b>El caso.</b> El control DualSense de PlayStation 5 tiene gatillos adaptativos. Dentro de cada gatillo hay un motor eléctrico con un tornillo sin fin, una rueda dentada y una palanca<sup class="cita"><a href="#f9">[9]</a></sup>; un potenciómetro lee la posición del engranaje para que el sistema sepa cuánta resistencia aplicar<sup class="cita"><a href="#f10">[10]</a></sup>. El juego decide, en cada momento, cuánta fuerza debe hacer ese mecanismo. En <i>Kena: Bridge of Spirits</i> (Ember Lab), el cocreador Mike Grier explicó que al tensar el arco "you have a little bit of resistance on the right trigger that tightens as you full draw": el gatillo derecho se pone más duro mientras más se tensa<sup class="cita"><a href="#f8">[8]</a></sup>. El video oficial de PlayStation Latinoamérica muestra ese mismo efecto<sup class="cita"><a href="#f11">[11]</a></sup>.</p>
     <p><b>La física.</b> El software lee la posición del gatillo y calcula la fuerza como si hubiera un resorte:</p>
     <div class="eq">
       Ley de Hooke: F = −k x &nbsp;&nbsp; (x = cuánto se ha hundido el gatillo, k = rigidez del resorte virtual)<br>
-      Tercera ley de Newton: <b>F</b><sub>motor sobre dedo</sub> = −<b>F</b><sub>dedo sobre motor</sub>
+      Tercera ley de Newton en el contacto dedo–gatillo: <b>F</b><sub>dedo sobre gatillo</sub> = −<b>F</b><sub>gatillo sobre dedo</sub>
     </div>
-    <p>El signo menos indica que la fuerza siempre apunta en contra del desplazamiento: es una fuerza restauradora. Por la tercera ley, el dedo empuja el gatillo con la misma fuerza con la que el motor empuja el dedo, y por eso el cerebro "cree" que está tensando algo real.</p>
+    <p>El signo menos de Hooke indica que la fuerza siempre apunta en contra del desplazamiento: es una fuerza restauradora.</p>
+    <p><b>Dónde está la tercera ley.</b> El único contacto entre la persona y el control es la yema del dedo apoyada sobre la superficie del gatillo. Ahí actúa el par de acción y reacción: el dedo empuja el gatillo hacia adentro con una fuerza <b>F</b>, y el gatillo empuja la yema del dedo hacia afuera con −<b>F</b>, de igual magnitud y en el mismo instante. Esa fuerza sobre la yema es lo que la persona siente como "resistencia".</p>
+    <p><b>Cómo llega la fuerza al gatillo.</b> El motor gira el tornillo sin fin, que mueve la rueda dentada, y esta coloca la palanca contra el brazo del gatillo<sup class="cita"><a href="#f9">[9]</a><a href="#f10">[10]</a></sup>. Cuando el dedo hunde el gatillo, el brazo del gatillo choca con la palanca: la palanca empuja el gatillo de vuelta y el gatillo empuja la palanca (otro par de tercera ley, ahora dentro del control). Si el motor aumenta la fuerza sobre la palanca, el gatillo empuja más fuerte la yema del dedo; si retira la palanca, la fuerza cae a cero<sup class="cita"><a href="#f9">[9]</a></sup>. El software solo controla el motor: lee la posición del gatillo y le pide la fuerza F = k·x que corresponde.</p>
     <p><b>Por qué modelar la física es mejor.</b> Una vibración fija o un patrón grabado se sentiría igual sin importar cuánto aprieta el jugador. Con F = −kx, la resistencia crece justo cuando el dedo avanza, y al cambiar k o el tramo donde actúa la fuerza el mismo hardware puede imitar un arco, un gatillo de pistola duro o un freno. El costo es que el control tiene que leer la posición y recalcular la fuerza muchas veces por segundo, y que el motor gasta batería.</p>
 
     <h3>Recurso de apoyo: multimedia con análisis</h3>
     <div class="video">
       <iframe src="https://www.youtube-nocookie.com/embed/cu-8QsawcOg" title="Video del gatillo adaptativo del DualSense" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
     </div>
-   
+    <p><a href="https://www.youtube.com/watch?v=cu-8QsawcOg" target="_blank" rel="noopener">Ver el video en YouTube</a></p>
     <h3>Análisis</h3>
-    <p><b>Minuto 0:20:</b> el video presenta <i>Kena: Bridge of Spirits</i>. Kena tensa el arco y, mientras lo hace, el gatillo se pone cada vez más duro. Ese es el momento donde se percibe la fuerza restauradora: mientras más se hunde el gatillo (x crece), mayor es la fuerza con la que el motor lo empuja de vuelta, F = k·x en magnitud.</p>
-    <p><b>Minuto 0:34:</b> Kena suelta la flecha. Aquí el juego pone la fuerza en cero de golpe: el gatillo "cede" y el dedo se va hasta el fondo. Es el salto de la curva verde en la gráfica de abajo, en x = 8 mm.</p>
+    <p><b>Minuto 0:20</b><sup class="cita"><a href="#f11">[11]</a></sup>: el video presenta <i>Kena: Bridge of Spirits</i>. Kena tensa el arco y, mientras lo hace, el gatillo se pone cada vez más duro, tal como lo describió su cocreador<sup class="cita"><a href="#f8">[8]</a></sup>. Ese es el momento donde se percibe la fuerza restauradora: mientras más se hunde el gatillo (x crece), con más fuerza empuja el gatillo la yema del dedo de vuelta, F = k·x en magnitud.</p>
+    <p><b>Minuto 0:34</b><sup class="cita"><a href="#f11">[11]</a></sup>: Kena suelta la flecha. Aquí el juego pone la fuerza en cero de golpe: el gatillo "cede" y el dedo se va hasta el fondo. Es el salto de la curva verde en la gráfica de abajo, en x = 8 mm.</p>
     <p>La gráfica muestra la curva de fuerza contra desplazamiento que produce el efecto. La línea gris es un resorte ideal; la verde es el efecto "arco": en los primeros 2 mm no hay resistencia (el arco aún no se tensa), de 2 a 8 mm la fuerza crece de forma lineal con pendiente k, y a los 8 mm se suelta la cuerda.</p>
     <div class="controls">
       <label>Rigidez del resorte virtual k <input type="range" id="t5-k" min="0.1" max="1" step="0.05" value="0.4"><output id="t5-k-o"></output></label>
     </div>
     <canvas id="t5-plot" class="plot" width="800" height="360"></canvas>
-    <p class="fuente">Curva calculada por el autor con la ley de Hooke. El recorrido de 10 mm y los valores de k son ilustrativos. Video: PlayStation Latinoamérica, «Juegos PS5 | Gatillos Adaptativos», YouTube, https://www.youtube.com/watch?v=cu-8QsawcOg</p>
+    <p class="fuente">Curva calculada por el autor con la ley de Hooke. El recorrido de 10 mm y los valores de k son ilustrativos. Video: PlayStation Latinoamérica, «Juegos PS5 | Gatillos Adaptativos»<sup class="cita"><a href="#f11">[11]</a></sup>.</p>
   </section>
 
+  <!-- ================= TEMA 6 ================= -->
+  <section id="tema6">
+    <p class="avance">Avance 2 · Leyes de conservación y Gravitación</p>
+    <h2>Tema 6 — Frenado regenerativo en un vehículo eléctrico</h2>
+    <p><b>Concepto:</b> trabajo, energía cinética y transformación de energía; cuánta de la energía del frenado se recupera y cuánta se disipa.</p>
 
+    <h3>Caso de uso en Ingeniería del Software</h3>
+    <p><b>El caso.</b> En el Nissan LEAF, el sistema e-Pedal permite acelerar y frenar con un solo pedal: al soltarlo, el motor de tracción trabaja al revés y frena el auto. En frenadas suaves, "regenerative braking supplies the majority of stopping power", y los frenos hidráulicos de fricción quedan de reserva para frenadas fuertes<sup class="cita"><a href="#f14">[14]</a></sup>. El software decide en cada instante cuánto frena el motor (y recarga la batería) y cuánto frenan las pastillas (y calientan el disco)<sup class="cita"><a href="#f14">[14]</a></sup>.</p>
+    <p><b>La física.</b> El teorema trabajo–energía dice que el trabajo total sobre el auto es igual al cambio de su energía cinética. Al frenar, ese trabajo es negativo y la energía cinética tiene que ir a algún lado:</p>
+    <div class="eq">
+      K = ½ m v² &nbsp;&nbsp;&nbsp; W_total = ΔK = ½ m (v_f² − v_i²)<br>
+      Fuerza que pide el ciclo: F = m a + C_rr m g + ½ ρ C_d A v² &nbsp;&nbsp; (inercia + rodadura + aire)<br>
+      Potencia en las ruedas: P = F · v &nbsp;&nbsp; (P &gt; 0 tracción, P &lt; 0 frenado)<br>
+      Energía recuperada: E_rec = η · ∫ |P| dt (cuando P &lt; 0) &nbsp;&nbsp;&nbsp; E_disipada = (1 − η) · ∫ |P| dt
+    </div>
+    <p>Parte de la energía cinética ya la "gastan" el aire y la rodadura sin que nadie frene. Lo que queda (P &lt; 0) es lo que hay que quitarle al auto: con frenos de fricción se vuelve calor, como en el Tema 4; con el motor como generador, una fracción η vuelve a la batería.</p>
+    <p><b>Por qué modelar la física es mejor.</b> Un valor fijo ("recupera siempre 30 %") no dice cuándo conviene frenar con el motor y cuándo con las pastillas. Con el balance de energía el software sabe cuánta potencia de frenado hay en cada instante, si la batería la puede recibir y cuánto debe completar la fricción, por ejemplo en hielo o con la batería llena, donde Nissan advierte que puede no haber suficiente frenado regenerativo<sup class="cita"><a href="#f14">[14]</a></sup>. Lo que cuesta: el modelo necesita la masa, la resistencia del aire y la eficiencia del motor, y el auto necesita frenos hidráulicos de todas formas, porque el motor no detiene el auto en cualquier condición<sup class="cita"><a href="#f14">[14]</a></sup>.</p>
+
+    <h3>Recurso de apoyo: visualización de datos</h3>
+    <p><b>Datos:</b> el ciclo de conducción urbano oficial de la EPA de Estados Unidos (UDDS), 1369 segundos de velocidad medida cada segundo<sup class="cita"><a href="#f12">[12]</a></sup>. Es el ciclo de ciudad que usa la EPA en sus pruebas de consumo. <b>Vehículo declarado:</b> m = 1600 kg, C_rr = 0,010, C_d·A = 0,70 m², ρ = 1,2 kg/m³, eficiencia de recuperación η = 70 %.</p>
+    <canvas id="t6-vel" class="plot" width="800" height="300"></canvas>
+    <canvas id="t6-ene" class="plot" width="800" height="380"></canvas>
+    <div class="controls">
+      <label>Eficiencia de recuperación η <input type="range" id="t6-eta" min="0" max="0.9" step="0.05" value="0.7"><output id="t6-eta-o"></output></label>
+    </div>
+    <p class="readout" id="t6-out"></p>
+    <p><b>Qué se ve.</b> Cada vez que la línea de velocidad baja, la curva roja (energía que hay que quitar al frenar) sube un escalón, y la verde sube un poco menos: la diferencia se disipa como calor. Con η = 70 %, el auto devuelve a la batería cerca del 31 % de la energía que entregó a las ruedas. Esto coincide con la estimación del Departamento de Energía para autos eléctricos en ciudad, que reporta un 32 % de energía devuelta por frenado regenerativo<sup class="cita"><a href="#f13">[13]</a></sup>. En carretera, con menos frenadas, la fracción sería mucho menor<sup class="cita"><a href="#f13">[13]</a></sup>.</p>
+    <p class="fuente">Velocidades: EPA, Urban Dynamometer Driving Schedule<sup class="cita"><a href="#f12">[12]</a></sup>. Fuerzas, potencias y energías calculadas por el autor con las ecuaciones de arriba y los parámetros declarados (código en <code>script.js</code>, función <code>tema6</code>).</p>
+  </section>
+
+  <!-- ================= TEMA 7 ================= -->
+  <section id="tema7">
+    <h2>Tema 7 — El coeficiente de restitución en un motor de videojuego: por qué la pelota rebota mal</h2>
+    <p><b>Concepto:</b> colisiones elásticas e inelásticas, conservación del momento lineal y coeficiente de restitución.</p>
+
+    <h3>Caso de uso en Ingeniería del Software</h3>
+    <p><b>El caso.</b> En Unity, cada superficie tiene un <i>Physic Material</i> con un valor de rebote (<i>Bounciness</i>) entre 0 y 1: 0 no rebota y 1 rebota sin perder energía<sup class="cita"><a href="#f15">[15]</a></sup>. Cuando chocan dos objetos, Unity combina los dos valores con un modo a elegir: promedio, mínimo, máximo o producto<sup class="cita"><a href="#f15">[15]</a></sup>. En Box2D, el motor de física 2D usado en muchos juegos, cada objeto tiene una restitución y además un umbral de velocidad: solo los choques más rápidos que ese umbral rebotan<sup class="cita"><a href="#f16">[16]</a></sup>. Esas dos reglas explican la mayoría de los "rebotes raros".</p>
+    <p><b>La física.</b></p>
+    <div class="eq">
+      Conservación del momento lineal: m₁ v₁ + m₂ v₂ = m₁ v₁′ + m₂ v₂′<br>
+      Coeficiente de restitución: e = − (v₁′ − v₂′) / (v₁ − v₂) &nbsp;&nbsp; (e = 1 elástico, e = 0 perfectamente inelástico)<br>
+      Pelota contra el suelo (m₂ ≫ m₁, v₂ ≈ 0): v′ = − e v<br>
+      Altura después de n rebotes: h_n = e²ⁿ h₀ &nbsp;&nbsp;&nbsp; energía perdida en cada choque: ΔK / K = 1 − e²
+    </div>
+    <p>El suelo está unido a la Tierra, así que su masa es enorme: el momento que recibe la Tierra es real, pero su cambio de velocidad es despreciable. Por eso para la pelota solo queda v′ = −e·v.</p>
+    <p><b>Por qué la pelota rebota mal.</b> Primero, con el modo promedio, una pelota con rebote 0,8 que cae sobre un piso con rebote 0 queda con e = (0,8 + 0)/2 = 0,4<sup class="cita"><a href="#f15">[15]</a></sup>: el programador cree que puso 0,8 y la pelota se ve "muerta". Segundo, con e = 1 la pelota no pierde energía y no se detiene nunca, y Unity advierte que sus aproximaciones pueden incluso agregar un poco de energía<sup class="cita"><a href="#f15">[15]</a></sup>. Tercero, el umbral de Box2D corta el rebote de golpe cuando la velocidad baja de cierto valor<sup class="cita"><a href="#f16">[16]</a></sup>: con un umbral alto, la pelota se pega al suelo en vez de dar los saltitos finales.</p>
+    <p><b>Por qué modelar la física es mejor.</b> Una animación de rebote hecha a mano solo sirve para una altura y un material. Con e y la conservación del momento, cualquier caída, cualquier ángulo y cualquier par de materiales da un rebote coherente. Lo que cuesta: hay que elegir bien e para cada par de materiales y entender cómo el motor los combina, o el resultado se ve peor que una animación.</p>
+
+    <h3>Recurso de apoyo: simulación interactiva</h3>
+    <div class="controls">
+      <label>Coeficiente de restitución e <input type="range" id="t7-e" min="0" max="1.1" step="0.01" value="0.75"><output id="t7-e-o"></output></label>
+      <label>Umbral de rebote (Box2D) <input type="range" id="t7-u" min="0" max="3" step="0.1" value="0.5"><output id="t7-u-o"></output></label>
+      <label class="check"><input type="checkbox" id="t7-avg"> Combinar con un piso de rebote 0 en modo promedio (Unity)</label>
+    </div>
+    <p>
+      <button data-t7="0.75,0.5,0">Pelota de tenis (e ≈ 0,75)</button>
+      <button data-t7="0.75,0.5,1">La misma pelota con el error del promedio</button>
+      <button data-t7="1,0,0">e = 1: nunca se detiene</button>
+      <button data-t7="1.05,0,0">e &gt; 1: gana energía (error)</button>
+      <button data-t7="0.75,2.5,0">Umbral muy alto</button>
+    </p>
+    <canvas id="t7-canvas" class="plot" width="800" height="360"></canvas>
+    <p class="readout" id="t7-out"></p>
+    <p>El valor de la pelota de tenis sale de la norma de la ITF: una pelota estándar soltada desde 254 cm debe rebotar entre 135 y 147 cm<sup class="cita"><a href="#f17">[17]</a></sup>. Como h₁ = e² h₀, e = √(135/254) ≈ 0,73 a √(147/254) ≈ 0,76.</p>
+    <p class="fuente">La altura se recalcula con las ecuaciones de arriba al mover cualquier control. Altura inicial: 2 m; g = 9,81 m/s².</p>
+  </section>
+
+  <!-- ================= TEMA 8 ================= -->
+  <section id="tema8">
+    <h2>Tema 8 — Ruedas de reacción: cómo un satélite se gira sin empujarse contra nada</h2>
+    <p><b>Concepto:</b> conservación del momento angular y torque.</p>
+
+    <h3>Caso de uso en Ingeniería del Software</h3>
+    <p><b>El caso.</b> El telescopio espacial Hubble apunta con cuatro ruedas de reacción grandes; su computadora de a bordo controla la velocidad de cada una. Si una rueda gira en sentido horario, el telescopio gira en sentido antihorario, y combinando las cuatro el Hubble apunta a cualquier lugar del cielo, a lo sumo a unos 90° cada 15 minutos<sup class="cita"><a href="#f18">[18]</a></sup>. El caso contrario muestra lo importante que es el software: el telescopio Kepler perdió en mayo de 2013 la segunda de sus cuatro ruedas y ya no podía apuntar con la precisión necesaria. Los ingenieros reprogramaron la misión (K2) para usar la presión de la luz solar como "tercera rueda"<sup class="cita"><a href="#f19">[19]</a></sup>.</p>
+    <p><b>La física.</b> En el espacio no hay nada contra qué empujar, pero el momento angular total se conserva si no hay torque externo:</p>
+    <div class="eq">
+      L_total = I_s ω_s + I_r ω_r = constante &nbsp;&nbsp; (s = satélite, r = rueda)<br>
+      Torque del motor: τ = I_r α_r sobre la rueda &nbsp;y&nbsp; −τ = I_s α_s sobre el satélite (tercera ley)<br>
+      Si todo parte del reposo: ω_s = − (I_r / I_s) ω_r<br>
+      Ángulo girado: Δθ_s = − (I_r / I_s) Δθ_r
+    </div>
+    <p><b>Por qué modelar la física es mejor.</b> Los propulsores también giran un satélite, pero gastan combustible, que es limitado, y dan golpes de fuerza poco precisos. Con las ruedas, el software calcula el torque exacto que necesita con τ = dL/dt y lo aplica de forma suave, solo con electricidad de los paneles solares. Lo que cuesta: las ruedas tienen una velocidad máxima, se desgastan (le pasó a Kepler<sup class="cita"><a href="#f19">[19]</a></sup>) y van acumulando momento angular que hay que "descargar" con un torque externo.</p>
+
+    <h3>Recurso de apoyo: diagrama</h3>
+    <svg viewBox="0 0 800 575" role="img" aria-label="Diagrama del satélite con su rueda de reacción, el intercambio de momento angular y las ecuaciones">
+      <defs>
+        <marker id="r8" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d1495b"/></marker>
+        <marker id="b8" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1f6feb"/></marker>
+        <marker id="k8" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1f2328"/></marker>
+      </defs>
+      <rect width="800" height="575" fill="#fff"/>
+      <text x="20" y="28" font-size="13" fill="#5b6168">Vista desde arriba: el eje de giro sale de la página. Diagrama elaborado por el autor.</text>
+      <!-- paneles -->
+      <rect x="30" y="215" width="120" height="70" fill="#dbe7f7" stroke="#1f6feb"/>
+      <line x1="70" y1="215" x2="70" y2="285" stroke="#1f6feb"/><line x1="110" y1="215" x2="110" y2="285" stroke="#1f6feb"/>
+      <rect x="370" y="215" width="120" height="70" fill="#dbe7f7" stroke="#1f6feb"/>
+      <line x1="410" y1="215" x2="410" y2="285" stroke="#1f6feb"/><line x1="450" y1="215" x2="450" y2="285" stroke="#1f6feb"/>
+      <line x1="150" y1="250" x2="170" y2="250" stroke="#1f2328" stroke-width="3"/><line x1="350" y1="250" x2="370" y2="250" stroke="#1f2328" stroke-width="3"/>
+      <!-- cuerpo -->
+      <rect x="170" y="150" width="180" height="200" rx="6" fill="#eef1f4" stroke="#1f2328" stroke-width="2"/>
+      <text x="260" y="172" font-size="13" text-anchor="middle">Satélite (I_s)</text>
+      <!-- rueda -->
+      <circle cx="260" cy="260" r="58" fill="#fbe3e6" stroke="#d1495b" stroke-width="3"/>
+      <circle cx="260" cy="260" r="6" fill="#1f2328"/>
+      <line x1="260" y1="260" x2="260" y2="206" stroke="#d1495b" stroke-width="2"/>
+      <line x1="260" y1="260" x2="307" y2="287" stroke="#d1495b" stroke-width="2"/>
+      <line x1="260" y1="260" x2="213" y2="287" stroke="#d1495b" stroke-width="2"/>
+      <text x="260" y="335" font-size="13" text-anchor="middle" fill="#d1495b">Rueda (I_r) + motor</text>
+      <!-- giro rueda: horario -->
+      <path d="M 210 215 A 68 68 0 0 1 318 228" fill="none" stroke="#d1495b" stroke-width="3" marker-end="url(#r8)"/>
+      <text x="335" y="196" font-size="15" fill="#d1495b">ω_r (horario)</text>
+      <!-- giro satelite: antihorario -->
+      <path d="M 140 365 A 175 175 0 0 0 380 365" fill="none" stroke="#1f6feb" stroke-width="3" marker-end="url(#b8)"/>
+      <text x="260" y="448" font-size="15" fill="#1f6feb" text-anchor="middle">ω_s (antihorario): el satélite gira al revés que la rueda</text>
+      <!-- torques -->
+      <text x="20" y="484" font-size="14"><tspan fill="#d1495b">τ</tspan> = torque del motor sobre la rueda · <tspan fill="#1f6feb">−τ</tspan> = torque de la rueda sobre el satélite (tercera ley)</text>
+      <!-- momentum bars -->
+      <text x="20" y="518" font-size="14" font-weight="bold">Momento angular (eje que sale de la página):</text>
+      <rect x="20" y="531" width="150" height="22" fill="#d1495b" opacity=".85"/><text x="95" y="547" font-size="13" text-anchor="middle" fill="#fff">L_r = I_r ω_r (−)</text>
+      <rect x="175" y="531" width="150" height="22" fill="#1f6feb" opacity=".85"/><text x="250" y="547" font-size="13" text-anchor="middle" fill="#fff">L_s = I_s ω_s (+)</text>
+      <text x="340" y="547" font-size="14">→ L_r + L_s = 0 (se compensan)</text>
+      <!-- ecuaciones -->
+      <rect x="520" y="60" width="262" height="300" rx="8" fill="#f1f4f8" stroke="#d9dcdf"/>
+      <text x="535" y="88" font-size="15" font-weight="bold">Ecuaciones</text>
+      <text x="535" y="116" font-size="14">L_total = I_s ω_s + I_r ω_r</text>
+      <text x="535" y="138" font-size="14">Sin torque externo: L_total = cte</text>
+      <text x="535" y="166" font-size="14">τ = dL/dt = I_r α_r (rueda)</text>
+      <text x="535" y="188" font-size="14">−τ = I_s α_s (satélite)</text>
+      <text x="535" y="216" font-size="14">ω_s = −(I_r / I_s) ω_r</text>
+      <text x="535" y="244" font-size="14" font-weight="bold">Saturación:</text>
+      <text x="535" y="266" font-size="14">|ω_r| ≤ ω_máx  ⇒</text>
+      <text x="535" y="288" font-size="14">|L_r| ≤ I_r ω_máx</text>
+      <text x="535" y="316" font-size="14">Descarga: τ_ext = m × B</text>
+      <text x="535" y="338" font-size="13" fill="#5b6168">(magnetotorques) o propulsores</text>
+    </svg>
+
+    <h3>Caso numérico y qué pasa cuando la rueda llega a su velocidad máxima</h3>
+    <p>Satélite pequeño declarado: I_s = 40 kg·m², rueda con I_r = 0,005 kg·m² y velocidad máxima de 6000 rpm (628 rad/s).</p>
+    <div class="eq">
+      Para girar el satélite a 1 °/s = 0,01745 rad/s: ω_r = −(I_s / I_r) ω_s = −(40 / 0,005)(0,01745) = −139,6 rad/s ≈ −1333 rpm<br>
+      Momento angular máximo de la rueda: L_máx = I_r ω_máx = 0,005 × 628 = 3,14 N·m·s<br>
+      Rapidez de giro máxima del satélite: ω_s,máx = L_máx / I_s = 3,14 / 40 = 0,0785 rad/s ≈ 4,5 °/s
+    </div>
+    <p><b>Saturación.</b> Las fuerzas pequeñas de afuera (el roce con la atmósfera, la presión de la luz solar) aplican torques externos que el satélite compensa acelerando la rueda. Ese momento angular se acumula. Cuando la rueda llega a su velocidad máxima ya no puede girar más rápido, así que el satélite pierde el control en ese eje: cualquier torque extra lo hace girar sin que la rueda pueda compensarlo. Para evitarlo, el software "descarga" la rueda con un torque externo mientras la frena. El Hubble usa magnetotorques, barras con bobinas que generan un campo magnético que interactúa con el de la Tierra, para bajar la velocidad de sus ruedas, que crece por el roce con la atmósfera a su altura<sup class="cita"><a href="#f18">[18]</a></sup>. Kepler, durante K2, descargaba sus ruedas con disparos de propulsores cada 48 horas<sup class="cita"><a href="#f20">[20]</a></sup>.</p>
+    <table>
+      <thead><tr><th>Giro del satélite [°/s]</th><th>Velocidad de la rueda [rpm]</th><th>% de la velocidad máxima</th></tr></thead>
+      <tbody id="t8-tabla"></tbody>
+    </table>
+  </section>
+
+  <!-- ================= TEMA 9 ================= -->
+  <section id="tema9">
+    <h2>Tema 9 — Asistencia gravitatoria: cómo la Voyager ganó velocidad sin gastar combustible</h2>
+    <p><b>Concepto:</b> gravitación universal, energía potencial gravitatoria y conservación del momento en el marco del planeta.</p>
+
+    <h3>Caso de uso en Ingeniería del Software</h3>
+    <p><b>El caso.</b> La Voyager 2 se lanzó hacia Júpiter con una llegada calculada para que la gravedad del planeta la acelerara, y la NASA repitió la técnica en Saturno y Urano<sup class="cita"><a href="#f22">[22]</a></sup>. Pasó cerca de Júpiter el 9 de julio de 1979, de Saturno el 26 de agosto de 1981, de Urano el 24 de enero de 1986 y de Neptuno el 25 de agosto de 1989<sup class="cita"><a href="#f23">[23]</a></sup>. Hoy ese tipo de trayectorias se diseñan con software; por ejemplo, la NASA publica como código abierto GMAT (General Mission Analysis Tool), que sirve para diseñar, optimizar y navegar trayectorias desde órbitas terrestres hasta el espacio profundo<sup class="cita"><a href="#f24">[24]</a></sup>.</p>
+    <p><b>La física.</b></p>
+    <div class="eq">
+      Gravitación universal: F = G M m / r² &nbsp;&nbsp;&nbsp; Energía potencial: U = − G M m / r<br>
+      Entre encuentros (solo el Sol): ½ m v² − G M_☉ m / r = constante<br>
+      Velocidad de escape del Sistema Solar: v_esc = √(2 G M_☉ / r)<br>
+      En el marco del planeta: |v_entrada| = |v_salida| (solo cambia la dirección)<br>
+      En el marco del Sol: v_sonda = V_planeta + v_rel &nbsp;&nbsp; ⇒ &nbsp; Δv puede llegar a 2 V_planeta
+    </div>
+    <p>Visto desde el planeta, la sonda llega y se va con la misma rapidez; solo cambia de dirección<sup class="cita"><a href="#f22">[22]</a></sup>. Es como el choque perfectamente elástico (e = 1) del Tema 7, pero sin contacto: la gravedad hace de "resorte". Visto desde el Sol, la sonda se lleva parte de la velocidad orbital del planeta, y el planeta pierde una cantidad de energía demasiado pequeña para medirse<sup class="cita"><a href="#f22">[22]</a></sup>: el momento total se conserva.</p>
+    <p><b>Por qué modelar la física es mejor.</b> Una trayectoria "dibujada" a mano no puede predecir el día exacto en que hay que lanzar para que cuatro planetas estén en su lugar. Con la gravitación universal el software calcula la trayectoria y la ajusta con maniobras pequeñas. Lo que se gana se ve en la gráfica de abajo: antes de Júpiter la sonda iba más lenta que la velocidad de escape, así que sin ese encuentro habría seguido ligada al Sol. Lo que cuesta: las ventanas de lanzamiento dependen de la posición de los planetas, y un error pequeño en un encuentro se amplifica en los siguientes.</p>
+
+    <h3>Recurso de apoyo: visualización de datos</h3>
+    <canvas id="t9-plot" class="plot" width="800" height="420"></canvas>
+    <p class="readout" id="t9-out"></p>
+    <p><b>Qué se ve.</b> Entre un planeta y otro la rapidez baja poco a poco: la sonda se aleja del Sol y cambia energía cinética por energía potencial, como una pelota que sube. En cada encuentro hay un salto. En Júpiter la rapidez pasa de unos 10 km/s a unos 21 km/s y queda por encima de la velocidad de escape (línea gris): desde ahí la Voyager 2 ya no está ligada al Sol. En Neptuno la rapidez baja: el encuentro desvió la sonda fuera del plano de los planetas (en los datos, su velocidad vertical v_z pasa de 0,6 a −11,9 km/s), pero aun así sigue por encima de la velocidad de escape.</p>
+    <p class="fuente">Datos: velocidades y distancias de la Voyager 2 respecto al Sol, sistema Horizons del JPL (NASA), un dato cada 30 días<sup class="cita"><a href="#f21">[21]</a></sup>. Rapidez |v| = √(v_x² + v_y² + v_z²) y velocidad de escape calculadas por el autor (G·M_☉ = 1,327 × 10¹¹ km³/s²). Fechas de encuentro: NASA<sup class="cita"><a href="#f23">[23]</a></sup>.</p>
+  </section>
+
+  <!-- ================= CONEXIONES ================= -->
+  <section id="conexiones">
+    <h2>Cómo se conectan los temas</h2>
+    <ul>
+      <li><b>Tema 1 → Tema 3:</b> el giro del dron es movimiento circular; su aceleración v²/r es la misma que da la gravedad artificial del hábitat.</li>
+      <li><b>Tema 4 → Tema 6:</b> los frenos de fricción convierten la energía cinética en calor; el frenado regenerativo evita una parte de esa pérdida.</li>
+      <li><b>Tema 5 → Tema 8:</b> la tercera ley aparece en el gatillo (dedo y gatillo) y en el satélite (rueda y cuerpo): el motor empuja a un lado y lo de afuera se mueve al otro.</li>
+      <li><b>Tema 7 → Tema 9:</b> la asistencia gravitatoria es un "choque" elástico (e = 1) visto desde el planeta, con la gravedad en lugar del contacto.</li>
+      <li><b>Tema 2 → Tema 9:</b> en el salto, el juego elige g; en la Voyager, g sale de G·M/r² y cambia con la distancia.</li>
+      <li><b>Tema 3 → Tema 8:</b> los dos usan rotación (ω, I); en el Tema 8 se conserva el momento angular L = I·ω.</li>
+    </ul>
+  </section>
+
+  <!-- ================= FUENTES ================= -->
   <section id="fuentes">
     <h2>Fuentes</h2>
-    <ul>
-      <li>PX4 Autopilot. <i>Using PX4's Navigation Filter (EKF2)</i>. Documentación oficial de PX4. docs.px4.io</li>
-      <li>Zipline. Sitio oficial. flyzipline.com</li>
-      <li>Pittman, K. (2016). <i>Math for Game Programmers: Building a Better Jump</i>. Game Developers Conference (GDC).</li>
-      <li>Johnson, R. D. y Holbrow, C. (Eds.) (1977). <i>Space Settlements: A Design Study</i> (NASA SP-413). NASA.</li>
-      <li>Pacejka, H. B. (2012). <i>Tire and Vehicle Dynamics</i> (3.ª ed.). Butterworth-Heinemann.</li>
-      <li>Milliken, W. F. y Milliken, D. L. (1995). <i>Race Car Vehicle Dynamics</i>. SAE International.</li>
-      <li>Sony Interactive Entertainment. <i>Control inalámbrico DualSense</i>. playstation.com</li>
-      <li>Serway, R. A. y Jewett, J. W. <i>Física para ciencias e ingeniería</i>, Vol. 1. Cengage. (Ecuaciones de cinemática, movimiento circular, fricción y ley de Hooke.)</li>
-      <li>PlayStation Latinoamérica. <i>Juegos PS5 | Gatillos Adaptativos</i> [Video]. YouTube. https://www.youtube.com/watch?v=cu-8QsawcOg</li>
-    </ul>
-    
+    <ol class="refs">
+      <li id="f1">PX4 Autopilot. <i>Using PX4's Navigation Filter (EKF2)</i>. Documentación oficial. <a href="https://docs.px4.io/main/en/advanced_config/tuning_the_ecl_ekf.html">https://docs.px4.io/main/en/advanced_config/tuning_the_ecl_ekf.html</a></li>
+      <li id="f2">PX4 Autopilot. <i>Project category: Cargo</i> (proyectos de logística, entrega y carga construidos con PX4). <a href="https://px4.io/project_category/cargo/">https://px4.io/project_category/cargo/</a></li>
+      <li id="f3">Pittman, K. (2016). <i>Math for Game Programmers: Building a Better Jump</i>. Game Developers Conference. GDC Vault. <a href="https://gdcvault.com/play/1023148/Math-for-Game-Programmers-Building">https://gdcvault.com/play/1023148/Math-for-Game-Programmers-Building</a></li>
+      <li id="f4">Johnson, R. D. y Holbrow, C. (Eds.) (1977). <i>Space Settlements: A Design Study</i> (NASA SP-413), capítulo 1. <a href="https://settlement.nss.org/75SummerStudy/Chapt.1.html">https://settlement.nss.org/75SummerStudy/Chapt.1.html</a></li>
+      <li id="f5">Siemens. <i>Simcenter Tire</i> (MF-Tyre/MF-Swift), ficha del producto en MathWorks Connections. <a href="https://www.mathworks.com/products/connections/product_detail/delft-tyre.html">https://www.mathworks.com/products/connections/product_detail/delft-tyre.html</a></li>
+      <li id="f6">Pacejka, H. B. y Besselink, I. (2012). <i>Tire and Vehicle Dynamics</i> (3.ª ed.). Butterworth-Heinemann. ISBN 978-0-08-097016-5. <a href="https://www.sciencedirect.com/book/9780080970165/tire-and-vehicle-dynamics">https://www.sciencedirect.com/book/9780080970165/tire-and-vehicle-dynamics</a></li>
+      <li id="f7">Milliken, W. F. y Milliken, D. L. (1995). <i>Race Car Vehicle Dynamics</i>. SAE International (R-146). <a href="https://www.sae.org/publications/books/content/r-146/">https://www.sae.org/publications/books/content/r-146/</a></li>
+      <li id="f8">Smith, R. (22 de diciembre de 2020). <i>Kena: Bridge of Spirits DualSense Features Detailed</i>. PlayStation LifeStyle (con declaraciones de Mike Grier, cocreador, tomadas de Official PlayStation Magazine UK). <a href="https://www.playstationlifestyle.net/2020/12/22/kena-bridge-of-spirits-dualsense-features/">https://www.playstationlifestyle.net/2020/12/22/kena-bridge-of-spirits-dualsense-features/</a></li>
+      <li id="f9">Papp, D. (13 de septiembre de 2021). <i>How The PS5's Genuinely Clever Adaptive Triggers Work</i>. Hackaday (a partir del desarmado de TronicsFix). <a href="https://hackaday.com/2021/09/13/how-the-ps5s-genuinely-clever-adaptive-triggers-work">https://hackaday.com/2021/09/13/how-the-ps5s-genuinely-clever-adaptive-triggers-work</a></li>
+      <li id="f10">TechRadar. <i>This is how PS5 DualSense controller adaptive triggers work</i>. <a href="https://www.techradar.com/news/this-is-how-ps5-dualsense-controller-adaptive-triggers-work">https://www.techradar.com/news/this-is-how-ps5-dualsense-controller-adaptive-triggers-work</a></li>
+      <li id="f11">PlayStation Latinoamérica. <i>Juegos PS5 | Gatillos Adaptativos</i> [Video]. YouTube. <a href="https://www.youtube.com/watch?v=cu-8QsawcOg">https://www.youtube.com/watch?v=cu-8QsawcOg</a></li>
+      <li id="f12">U.S. Environmental Protection Agency. <i>Urban Dynamometer Driving Schedule (UDDS)</i>, archivo de datos. <a href="https://www.epa.gov/sites/default/files/2015-10/uddscol.txt">https://www.epa.gov/sites/default/files/2015-10/uddscol.txt</a></li>
+      <li id="f13">U.S. Department of Energy y EPA. <i>All-Electric Vehicles</i>, figura "Where the Energy Goes" (Oak Ridge National Laboratory, ciclo FTP-75). fueleconomy.gov. <a href="https://www.fueleconomy.gov/feg/atv-ev.shtml">https://www.fueleconomy.gov/feg/atv-ev.shtml</a></li>
+      <li id="f14">Nissan TechNews (13 de noviembre de 2019). <i>The Nissan LEAF e-Pedal</i>. Automotive Tech Info. <a href="https://automotivetechinfo.com/2019/11/the-nissan-leaf-e-pedal">https://automotivetechinfo.com/2019/11/the-nissan-leaf-e-pedal</a></li>
+      <li id="f15">Unity Technologies. <i>Physic Material</i>. Manual de Unity. <a href="https://docs.unity3d.com/Manual/class-PhysicMaterial.html">https://docs.unity3d.com/Manual/class-PhysicMaterial.html</a></li>
+      <li id="f16">Box2D. <i>b2FixtureDef</i> (restitution, restitutionThreshold). Documentación de Box2D 2.4.1. <a href="https://box2d.org/documentation/structb2_fixture_def.html">https://box2d.org/documentation/structb2_fixture_def.html</a></li>
+      <li id="f17">International Tennis Federation (2023). <i>ITF Technical Booklet</i>. <a href="https://www.itftennis.com/media/4420/2023-technical-booklet.pdf">https://www.itftennis.com/media/4420/2023-technical-booklet.pdf</a></li>
+      <li id="f18">NASA. <i>Hubble: Pointing Control</i>. <a href="https://science.nasa.gov/mission/hubble/observatory/design/pointing-control">https://science.nasa.gov/mission/hubble/observatory/design/pointing-control</a></li>
+      <li id="f19">Phys.org (noviembre de 2013). <i>How NASA revived the Kepler Space Telescope</i>. <a href="https://phys.org/news/2013-11-nasa-revived-kepler-space-telescope.html">https://phys.org/news/2013-11-nasa-revived-kepler-space-telescope.html</a></li>
+      <li id="f20">NASA JPL. <i>K2</i> (descripción del proyecto). <a href="https://science.jpl.nasa.gov/projects/k2">https://science.jpl.nasa.gov/projects/k2</a></li>
+      <li id="f21">NASA JPL. <i>Horizons System</i>, consulta de vectores de la Voyager 2 (−32) respecto al Sol, 1977-09-01 a 1990-01-01, paso de 30 días. <a href="https://ssd.jpl.nasa.gov/api/horizons.api?format=text&amp;COMMAND='-32'&amp;EPHEM_TYPE=VECTORS&amp;CENTER='500@10'&amp;START_TIME='1977-09-01'&amp;STOP_TIME='1990-01-01'&amp;STEP_SIZE='30%20d'&amp;VEC_TABLE='3'&amp;OBJ_DATA=NO&amp;CSV_FORMAT=YES">consulta en la API de Horizons</a> · <a href="https://ssd.jpl.nasa.gov/horizons/">https://ssd.jpl.nasa.gov/horizons/</a></li>
+      <li id="f22">NASA. <i>Basics of Space Flight, Chapter 4: Trajectories</i> (asistencia gravitatoria). <a href="https://science.nasa.gov/learn/basics-of-space-flight/chapter4-1/">https://science.nasa.gov/learn/basics-of-space-flight/chapter4-1/</a></li>
+      <li id="f23">NASA. <i>Voyager 2</i>. <a href="https://science.nasa.gov/mission/voyager/voyager-2/">https://science.nasa.gov/mission/voyager/voyager-2/</a></li>
+      <li id="f24">NASA. <i>General Mission Analysis Tool (GMAT)</i>, NASA Software Catalog. <a href="https://software.nasa.gov/software/GSC-19468-1">https://software.nasa.gov/software/GSC-19468-1</a></li>
+    </ol>
+    <p class="fuente">Las gráficas, las simulaciones y los diagramas fueron elaborados por el autor. Código fuente: <a href="https://github.com/dannyaj08/PortafolioFisica">https://github.com/dannyaj08/PortafolioFisica</a>.</p>
   </section>
 </main>
 
 <footer>Portafolio de evidencias · Física I · CENFOTEC 2026</footer>
+<script src="data.js"></script>
 <script src="script.js"></script>
 </body>
 </html>
